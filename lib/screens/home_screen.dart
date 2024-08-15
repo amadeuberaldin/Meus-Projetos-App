@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/project_provider.dart';
-import '../widgets/project_card.dart';
 import '../models/project.dart';
 import '../models/task.dart';
+import '../providers/project_provider.dart';
+import '../widgets/project_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -62,7 +62,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Função para determinar a prioridade de cor dos projetos
   int _getProjectPriority(BuildContext context, Project project) {
     final tasks = Provider.of<ProjectProvider>(context, listen: false).getTasks(project.id);
     final bool allTodo = tasks.every((task) => task.status == TaskStatus.todo);
