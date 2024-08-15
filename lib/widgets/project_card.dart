@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/project.dart';
+import '../models/task.dart';
 import '../providers/project_provider.dart';
 import '../screens/project_screen.dart';
 
@@ -11,26 +12,46 @@ class ProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(project.name), // O nome do projeto aparece primeiro
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => _showEditProjectDialog(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => _showDeleteProjectDialog(context),
-          ),
-        ],
+    // Obtém o status das tarefas para determinar a cor de fundo
+    final tasks = Provider.of<ProjectProvider>(context).getTasks(project.id);
+    final bool allTodo = tasks.every((task) => task.status == TaskStatus.todo);
+    final bool allDone = tasks.every((task) => task.status == TaskStatus.done);
+    final bool hasDoingOrDone = tasks.any((task) => task.status == TaskStatus.doing || task.status == TaskStatus.done);
+
+    Color backgroundColor;
+    if (allTodo) {
+      backgroundColor = Colors.red.shade100; // Vermelho claro se todas as tarefas estiverem "Por Fazer"
+    } else if (allDone) {
+      backgroundColor = Colors.blue.shade100; // Azul claro se todas as tarefas estiverem concluídas
+    } else if (hasDoingOrDone) {
+      backgroundColor = Colors.yellow.shade100; // Amarelo se houver alguma tarefa em andamento ou concluída, mas ainda com tarefas "Por Fazer"
+    } else {
+      backgroundColor = Colors.transparent; // Sem cor caso não se encaixe em nenhuma condição
+    }
+
+    return Card(
+      color: backgroundColor, // Define a cor de fundo
+      child: ListTile(
+        title: Text(project.name),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () => _showEditProjectDialog(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () => _showDeleteProjectDialog(context),
+            ),
+          ],
+        ),
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ProjectScreen(project: project),
+          ));
+        },
       ),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => ProjectScreen(project: project),
-        ));
-      },
     );
   }
 

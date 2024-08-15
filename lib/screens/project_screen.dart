@@ -89,9 +89,10 @@ class ProjectScreen extends StatelessWidget {
               controller: nameController,
               decoration: const InputDecoration(hintText: 'Nome da Tarefa'),
             ),
-            TextField(
+            TextFormField(
               controller: descriptionController,
               decoration: const InputDecoration(hintText: 'Descrição da Tarefa'),
+              maxLines: 5, // Permite até 5 linhas de texto para a descrição
             ),
           ],
         ),
@@ -116,6 +117,7 @@ class ProjectScreen extends StatelessWidget {
       ),
     );
   }
+
 
   void _showEditTaskDialog(BuildContext context, Task task) {
     final TextEditingController nameController = TextEditingController(text: task.name);
