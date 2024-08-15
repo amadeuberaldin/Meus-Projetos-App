@@ -1,91 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../models/project.dart';
-import '../providers/project_provider.dart';
-import '../screens/project_screen.dart';
+import '../models/task.dart';
 
-class ProjectCard extends StatelessWidget {
-  final Project project;
+class TaskCard extends StatelessWidget {
+  final Task task;
+  final VoidCallback onTap;
+  final Function(TaskStatus) onMove;
 
-  const ProjectCard({super.key, required this.project});
+  const TaskCard({
+    super.key,
+    required this.task,
+    required this.onTap,
+    required this.onMove,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(project.name), // O nome do projeto aparece primeiro
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => _showEditProjectDialog(context),
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  task.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.0,
+                  ),
+                  overflow: TextOverflow.ellipsis, // Adiciona elipses para texto muito longo
+                  maxLines: 1, // Limita o texto a uma linha
+                ),
+              ),
+              PopupMenuButton<TaskStatus>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (status) => onMove(status),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: TaskStatus.todo,
+                    child: Text('Mover para Por Fazer'),
+                  ),
+                  const PopupMenuItem(
+                    value: TaskStatus.doing,
+                    child: Text('Mover para Fazendo'),
+                  ),
+                  const PopupMenuItem(
+                    value: TaskStatus.done,
+                    child: Text('Mover para Feito'),
+                  ),
+                ],
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => _showDeleteProjectDialog(context),
-          ),
-        ],
-      ),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => ProjectScreen(project: project),
-        ));
-      },
-    );
-  }
-
-  void _showEditProjectDialog(BuildContext context) {
-    final TextEditingController controller = TextEditingController(text: project.name);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Editar Projeto'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Nome do Projeto'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                Provider.of<ProjectProvider>(context, listen: false).editProject(project.id, controller.text);
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text('Salvar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteProjectDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir Projeto'),
-        content: const Text('Você tem certeza que deseja excluir este projeto?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              Provider.of<ProjectProvider>(context, listen: false).deleteProject(project.id);
-              Navigator.of(context).pop();
-            },
-            child: const Text('Excluir'),
-          ),
-        ],
       ),
     );
   }
