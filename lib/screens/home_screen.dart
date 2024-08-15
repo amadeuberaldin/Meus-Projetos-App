@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
+import '../models/project.dart';
+import '../models/task.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key}); // Usando super.key
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,8 @@ class HomeScreen extends StatelessWidget {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Ajuda'),
-                  content: const Text('Esta é a tela onde o usuário deverá criar seus projetos e organizar as tarefas necessárias para concluir o projeto.'),
+                  content: const Text(
+                      'Esta é a tela onde o usuário deverá criar seus projetos e organizar as tarefas necessárias para concluir o projeto.'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
@@ -34,10 +37,15 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Consumer<ProjectProvider>(
         builder: (context, projectProvider, child) {
+          final projects = projectProvider.projects;
+
+          // Ordena os projetos com base nas cores de prioridade: Amarelo, Vermelho e Azul
+          projects.sort((a, b) => _getProjectPriority(context, a).compareTo(_getProjectPriority(context, b)));
+
           return ListView.builder(
-            itemCount: projectProvider.projects.length + 1,
+            itemCount: projects.length + 1,
             itemBuilder: (context, index) {
-              if (index == projectProvider.projects.length) {
+              if (index == projects.length) {
                 return ListTile(
                   leading: const Icon(Icons.add),
                   title: const Text('Criar novo projeto'),
@@ -46,12 +54,29 @@ class HomeScreen extends StatelessWidget {
                   },
                 );
               }
-              return ProjectCard(project: projectProvider.projects[index]);
+              return ProjectCard(project: projects[index]);
             },
           );
         },
       ),
     );
+  }
+
+  // Função para determinar a prioridade de cor dos projetos
+  int _getProjectPriority(BuildContext context, Project project) {
+    final tasks = Provider.of<ProjectProvider>(context, listen: false).getTasks(project.id);
+    final bool allTodo = tasks.every((task) => task.status == TaskStatus.todo);
+    final bool allDone = tasks.every((task) => task.status == TaskStatus.done);
+    final bool hasDoingOrDone = tasks.any((task) => task.status == TaskStatus.doing || task.status == TaskStatus.done);
+
+    if (allTodo) {
+      return 2; // Vermelho tem a maior prioridade
+    } else if (hasDoingOrDone) {
+      return 1; // Amarelo tem prioridade intermediária
+    } else if (allDone) {
+      return 3; // Azul tem a menor prioridade
+    }
+    return 0; // Caso padrão (sem cor definida)
   }
 
   void _showCreateProjectDialog(BuildContext context) {
