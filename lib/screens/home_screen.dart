@@ -69,12 +69,12 @@ class HomeScreen extends StatelessWidget {
     final bool allDone = tasks.every((task) => task.status == TaskStatus.done);
     final bool hasDoingOrDone = tasks.any((task) => task.status == TaskStatus.doing || task.status == TaskStatus.done);
 
-    if (allTodo) {
-      return 2; // Vermelho tem a maior prioridade
-    } else if (hasDoingOrDone) {
-      return 1; // Amarelo tem prioridade intermediária
+    if (hasDoingOrDone) {
+      return 1; // Amarelo (prioridade mais alta)
+    } else if (allTodo) {
+      return 2; // Vermelho (prioridade intermediária)
     } else if (allDone) {
-      return 3; // Azul tem a menor prioridade
+      return 3; // Azul (prioridade mais baixa)
     }
     return 0; // Caso padrão (sem cor definida)
   }
